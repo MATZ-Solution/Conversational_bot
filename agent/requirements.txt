@@ -1,0 +1,9 @@
+# Pin these to the minor version you test against, then bump deliberately --
+# LiveKit ships this framework fast. Check current versions with:
+#   pip index versions livekit-agents
+livekit-agents[silero,turn-detector]~=1.7
+livekit-plugins-deepgram~=1.7
+livekit-plugins-cartesia~=1.7
+livekit-plugins-groq~=1.7
+livekit-plugins-noise-cancellation~=0.2
+python-dotenv~=1.0
