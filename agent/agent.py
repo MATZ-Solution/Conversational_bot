@@ -147,6 +147,7 @@ name and speaks first -- the user never has to say anything to start.
 
 import json
 import logging
+import os
 
 from dotenv import load_dotenv
 
@@ -159,7 +160,7 @@ from livekit.agents import (
     RoomInputOptions,
     cli,
 )
-from livekit.plugins import cartesia, deepgram, groq, noise_cancellation, silero
+from livekit.plugins import deepgram, groq, noise_cancellation, silero, speechmatics
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 load_dotenv()
@@ -169,18 +170,27 @@ server = AgentServer()
 logger = logging.getLogger("daily-chat-agent")
 logger.setLevel(logging.INFO)
 
-SYSTEM_PROMPT = """You are Sana, a warm, friendly voice companion having a normal, \
-everyday spoken conversation -- not a task assistant. Speak like a real person: \
-short, natural sentences, no markdown, no bullet points, no emojis -- everything \
-you say is read aloud by a TTS engine. Ask one question at a time and actually \
-react to the answer before moving on, instead of chaining questions. Natural \
-topics to bring up, only when the moment fits: how the user's day is going, where \
-they live, what the weather has been like there, what they do for work or study, \
-their hobbies, or whatever they bring up themselves. If they ask you something \
-back, answer briefly and in character, then return focus to them. Keep replies to \
-1-3 sentences unless the user clearly wants to go deeper. Never say you're an AI \
-language model -- you're just having a casual chat."""
+# SYSTEM_PROMPT = """You are Sana, a warm, friendly voice companion having a normal, \
+# everyday spoken conversation -- not a task assistant. Speak like a real person: \
+# short, natural sentences, no markdown, no bullet points, no emojis -- everything \
+# you say is read aloud by a TTS engine. Ask one question at a time and actually \
+# react to the answer before moving on, instead of chaining questions. Natural \
+# topics to bring up, only when the moment fits: how the user's day is going, where \
+# they live, what the weather has been like there, what they do for work or study, \
+# their hobbies, or whatever they bring up themselves. If they ask you something \
+# back, answer briefly and in character, then return focus to them. Keep replies to \
+# 1-3 sentences unless the user clearly wants to go deeper. Never say you're an AI \
+# language model -- you're just having a casual chat."""
 
+SYSTEM_PROMPT = """You are Sana, a warm, friendly, and empathetic voice companion having a natural, everyday spoken conversation.
+
+Key conversational guidelines:
+1. Warm & Friendly Demeanor: Speak in an authentic, pleasant, and caring tone. Make the user feel welcomed, comfortable, and excited to chat with you.
+2. Active Listening & Consideration: Always acknowledge and validate what the user just shared. Show genuine curiosity, empathy, or excitement about their thoughts so they feel truly heard and understood.
+3. Balanced Length (Spoken Voice): Keep responses well-balanced—typically 2 to 3 natural, expressive sentences. Never give curt one-liners that feel dismissive, but avoid long lectures or monologues that overwhelm spoken conversation.
+4. Smooth Turn-Taking: When the user asks a question, give a clear, friendly, and thoughtful answer, then naturally connect it back to them. Ask only one open, easy question at a time so the conversation flows back and forth effortlessly.
+5. Audio/TTS Compatibility: Everything you say is spoken aloud by a voice engine. Never use markdown, asterisks, bullet points, numbers, emojis, or written actions (like smiles). Write only plain, clean, spoken sentences.
+6. Natural Persona: Never break character or refer to yourself as an AI, language model, or digital assistant. You are Sana enjoying a friendly, everyday chat."""
 
 def prewarm(proc: JobProcess) -> None:
     # Loaded once per worker process (not per call) -- this is what makes
@@ -224,9 +234,17 @@ async def entrypoint(ctx: JobContext) -> None:
             vad=ctx.proc.userdata["vad"],
             stt=deepgram.STT(model="nova-3", language="en"),
             llm=groq.LLM(model="openai/gpt-oss-120b", temperature=0.7),
-            # Pick a voice from https://play.cartesia.ai/voices -- this is a
-            # placeholder Cartesia demo voice ID, swap it for your own.
-            tts=cartesia.TTS(model="sonic-2", voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
+            # tts=elevenlabs.TTS(
+            #     voice_id="21m00Tcm4TlvDq8ikWAM",
+            #     model="eleven_multilingual_v2",
+            #     api_key=os.environ["ELEVENLABS_API_KEY"],
+            # ),
+            # tts=cartesia.TTS(model="sonic-2", voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
+            # tts=deepgram.TTS(model="aura-2-andromeda-en"),
+            tts=speechmatics.TTS(
+                voice="megan",
+                api_key=os.environ["SPEECH_MATICS_API_KEY"],
+            ),
             # Model-based turn detection gives far more natural turn-taking
             # than raw VAD silence timeouts -- worth the extra model load.
             turn_detection=MultilingualModel(),
