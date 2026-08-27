@@ -128,13 +128,7 @@ app = FastAPI(title="Daily Chat Bot - Token Server")
 # matters if you ever add a web client too.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        origin.strip()
-        for origin in os.environ.get(
-            "ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:5174"
-        ).split(",")
-        if origin.strip()
-    ],
+    allow_origins=os.getenv("ALLOWED_ORIGINS",["http://localhost:5173,http://localhost:5174"]),
     allow_methods=["POST", "GET"],
     allow_headers=["*"],
 )
@@ -187,6 +181,6 @@ async def start_conversation(payload: StartConversationRequest) -> StartConversa
     )
 
 
-@app.get("/healthz")
+@app.get("/health")
 async def healthz():
     return {"status": "ok", "ts": int(time.time())}
