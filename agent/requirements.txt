@@ -3,7 +3,9 @@
 #   pip index versions livekit-agents
 livekit-agents[silero,turn-detector]~=1.7
 livekit-plugins-deepgram~=1.7
+livekit-plugins-speechmatics~=1.7
 livekit-plugins-cartesia~=1.7
+livekit-plugins-elevenlabs~=1.7
 livekit-plugins-groq~=1.7
 livekit-plugins-noise-cancellation~=0.2
 python-dotenv~=1.0

@@ -147,6 +147,7 @@ name and speaks first -- the user never has to say anything to start.
 
 import json
 import logging
+import os
 
 from dotenv import load_dotenv
 
@@ -159,7 +160,7 @@ from livekit.agents import (
     RoomInputOptions,
     cli,
 )
-from livekit.plugins import cartesia, deepgram, groq, noise_cancellation, silero
+from livekit.plugins import deepgram, groq, noise_cancellation, silero, speechmatics
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 load_dotenv()
@@ -224,9 +225,17 @@ async def entrypoint(ctx: JobContext) -> None:
             vad=ctx.proc.userdata["vad"],
             stt=deepgram.STT(model="nova-3", language="en"),
             llm=groq.LLM(model="openai/gpt-oss-120b", temperature=0.7),
-            # Pick a voice from https://play.cartesia.ai/voices -- this is a
-            # placeholder Cartesia demo voice ID, swap it for your own.
-            tts=cartesia.TTS(model="sonic-2", voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
+            # tts=elevenlabs.TTS(
+            #     voice_id="21m00Tcm4TlvDq8ikWAM",
+            #     model="eleven_multilingual_v2",
+            #     api_key=os.environ["ELEVENLABS_API_KEY"],
+            # ),
+            # tts=cartesia.TTS(model="sonic-2", voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
+            # tts=deepgram.TTS(model="aura-2-andromeda-en"),
+            tts=speechmatics.TTS(
+                voice="sarah",
+                api_key=os.environ["SPEECH_MATICS_API_KEY"],
+            ),
             # Model-based turn detection gives far more natural turn-taking
             # than raw VAD silence timeouts -- worth the extra model load.
             turn_detection=MultilingualModel(),
