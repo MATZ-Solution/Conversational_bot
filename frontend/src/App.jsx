@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Room, RoomEvent, Track } from "livekit-client";
+import { apiUrl } from "./lib/api";
 
 // "idle" -> typing name
 // "connecting" -> waiting on token + room join
@@ -31,7 +32,7 @@ export default function App() {
         setErrorMsg("");
 
         try {
-            const res = await fetch("/api/start-conversation", {
+            const res = await fetch(apiUrl("/api/start-conversation"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: cleanName }),

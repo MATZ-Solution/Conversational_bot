@@ -126,13 +126,19 @@ app = FastAPI(title="Daily Chat Bot - Token Server")
 # Tighten this to your app's actual origin(s)/scheme before shipping.
 # React Native apps don't send a browser Origin header, so this mainly
 # matters if you ever add a web client too.
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=os.getenv("ALLOWED_ORIGINS",["http://localhost:5173,http://localhost:5174"]),
+#     allow_methods=["POST", "GET"],
+#     allow_headers=["*"],
+# )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS",["http://localhost:5173,http://localhost:5174"]),
-    allow_methods=["POST", "GET"],
+    allow_origins=os.getenv("ALLOWED_ORIGINS",["http://localhost:5173","http://localhost:5174"]).split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 class StartConversationRequest(BaseModel):
     name: str = Field(min_length=1, max_length=50)
