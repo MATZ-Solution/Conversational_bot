@@ -105,6 +105,7 @@ import os
 import time
 import uuid
 from datetime import timedelta
+from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -123,25 +124,35 @@ LIVEKIT_API_SECRET = os.environ["LIVEKIT_API_SECRET"]
 
 app = FastAPI(title="Daily Chat Bot - Token Server")
 
-# Tighten this to your app's actual origin(s)/scheme before shipping.
-# React Native apps don't send a browser Origin header, so this mainly
-# matters if you ever add a web client too.
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=os.getenv("ALLOWED_ORIGINS",["http://localhost:5173,http://localhost:5174"]),
-#     allow_methods=["POST", "GET"],
-#     allow_headers=["*"],
-# )
+raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:5174").strip()
+if raw_origins.startswith("[") and raw_origins.endswith("]"):
+    try:
+        allowed_origins = json.loads(raw_origins)
+    except Exception:
+        allowed_origins = [o.strip() for o in raw_origins.strip("[]").replace('"', '').replace("'", '').split(",") if o.strip()]
+else:
+    allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS",["http://localhost:5173","http://localhost:5174"]).split(","),
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Onboarding answers from the web app. Kept to fixed values (not free text)
+# because they end up inside the agent's system prompt.
+Level = Literal["beginner", "intermediate", "advanced"]
+Goal = Literal["job_interview", "travel", "daily_conversation", "studies", "work_meetings"]
+Struggle = Literal["grammar", "pronunciation", "vocabulary", "fluency", "confidence"]
+
+
 class StartConversationRequest(BaseModel):
     name: str = Field(min_length=1, max_length=50)
+    level: Level | None = None
+    goal: Goal | None = None
+    struggles: list[Struggle] = Field(default_factory=list, max_length=5)
 
 
 class StartConversationResponse(BaseModel):
@@ -158,7 +169,14 @@ async def start_conversation(payload: StartConversationRequest) -> StartConversa
 
     identity = f"user-{uuid.uuid4().hex[:8]}"
     room_name = f"chat-{uuid.uuid4().hex[:10]}"
-    metadata = json.dumps({"name": clean_name})
+    metadata = json.dumps(
+        {
+            "name": clean_name,
+            "level": payload.level,
+            "goal": payload.goal,
+            "struggles": list(dict.fromkeys(payload.struggles)),
+        }
+    )
 
     token = (
         api.AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)

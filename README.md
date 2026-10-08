@@ -81,27 +81,21 @@ the backend is not running at `http://localhost:8000`.
 Get your `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` / `LIVEKIT_URL` from
 the LiveKit Cloud dashboard -- same three values go in both `.env` files.
 
-## React Native side (sketch)
+## React Native Mobile Application
 
-Install `@livekit/react-native` + `@livekit/react-native-webrtc` and
-`livekit-client`. The connect call is the only part that matters here;
-everything else (mic permission prompts, audio session config) is
-covered in LiveKit's RN quickstart, which you should follow closely
-since RN audio routing has real platform-specific gotchas on iOS.
+For full, step-by-step instructions on setting up, building, and running the React Native / Expo app (including Android/iOS native dev builds, network IP configuration, and troubleshooting), see the dedicated [Mobile Application Setup Guide](file:///d:/chatbot/daily-chat-bot/daily-chat-mobile/README.md).
 
-```tsx
-const res = await fetch(`${API_BASE}/api/start-conversation`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ name }),
-});
-const { livekit_url, token } = await res.json();
+### Quick Mobile Run:
+```bash
+# 1. Update config.js with your computer's local Wi-Fi IP (not localhost)
+cd daily-chat-mobile
+npm install
 
-const room = new Room();
-await room.connect(livekit_url, token);
-await room.localParticipant.setMicrophoneEnabled(true);
-// Subscribe to the agent's audio track like any remote participant --
-// LiveKit's RN SDK auto-plays subscribed audio tracks by default.
+# 2. Run local native Android build (WebRTC requires a Dev Build, NOT standard Expo Go)
+npx expo run:android
+
+# 3. Start the bundler
+npx expo start --dev-client
 ```
 
 ## Deploying (given your existing EC2/Nginx/pm2/Certbot workflow)
