@@ -52,16 +52,20 @@ export default function App() {
         setErrorMsg("");
         setMessages([]);
 
+        const answers = {
+            name: learner.name,
+            level: learner.level,
+            goal: learner.goal,
+            struggles: learner.struggles,
+        };
+        // Visible in DevTools > Console: exactly what MATZ will be told.
+        console.info("[matz] Starting call with onboarding answers:", answers);
+
         try {
             const res = await fetch(apiUrl("/api/start-conversation"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: learner.name,
-                    level: learner.level,
-                    goal: learner.goal,
-                    struggles: learner.struggles,
-                }),
+                body: JSON.stringify(answers),
             });
 
             if (!res.ok) {

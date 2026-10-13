@@ -196,7 +196,7 @@ async def start_conversation(payload: StartConversationRequest) -> StartConversa
         .to_jwt()
     )
 
-    logger.info("Issued token | identity=%s room=%s", identity, room_name)
+    logger.info("Issued token | identity=%s room=%s metadata=%s", identity, room_name, metadata)
 
     return StartConversationResponse(
         livekit_url=LIVEKIT_URL,
